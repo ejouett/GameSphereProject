@@ -6,3 +6,6 @@ Note: Make sure you have completed the React Native - Environment Setup instruct
 
 API's
 - RAWGS API
+
+
+Only added package.json file because I added a single dependency to each file in order to get the navigation to work. You may not need to add these files depending on your system    "@react-navigation/native-stack": "^6.9.12"
