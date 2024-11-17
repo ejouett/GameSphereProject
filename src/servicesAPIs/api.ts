@@ -15,6 +15,14 @@ export interface Game {
   rating: number;
 }
 
+export interface Review {
+  id: number;
+  name: string;
+  text: string;
+  username: string;
+  date: string;
+}
+
 export const fetchGames = async (query = ''): Promise<Game[]> => {
   const url = `${BASE_URL}/games?key=${RAWG_API_KEY}&search=${query}`;
 
@@ -33,5 +41,34 @@ export const fetchGames = async (query = ''): Promise<Game[]> => {
   }
 };
 
+//new
+export const fetchGameReviews = async (gameId: number): Promise<Review[]> => {
+  const url = `${BASE_URL}/games/${gameId}/reviews?key=${RAWG_API_KEY}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error('Error fetching reviews:', response.status, response.statusText);
+      return [];
+    }
+    const data = await response.json();
+    return data.results as Review[];
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return [];
+  }
+};
 
-
+export const fetchGameDetails = async (gameId: number): Promise<any> => {
+  const url = `${BASE_URL}/games/${gameId}?key=${RAWG_API_KEY}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error('Error fetching game details:', response.status, response.statusText);
+      return null;
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Fetch error:', error);
+    return null;
+  }
+};

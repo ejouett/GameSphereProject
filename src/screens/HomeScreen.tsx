@@ -1,8 +1,17 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../App';
 
+type HomeScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Home'>;
 
-const HomeScreen = ({ navigation })  => {
+type Props = {
+  navigation: HomeScreenNavigationProp;
+};
+
+const HomeScreen: React.FC<Props> = ({ navigation }) => {
+
+//const HomeScreen = ({ navigation })  => {
   return (
     <View style={styles.container}>
        <Text style={styles.missionText}>

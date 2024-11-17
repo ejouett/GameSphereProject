@@ -5,12 +5,21 @@
 import { fetchGames, Game } from '../servicesAPIs/api';
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, StyleSheet } from 'react-native';
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 //import { fetchGames, Game } from '../api/rawgApi';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../App';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+type NewGameScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'NewGames'>;
 
-const NewGamesScreen: React.FC = () => {
+type Props = {
+  navigation: NewGameScreenNavigationProp;
+};
+//const NewGamesScreen: React.FC = () => {
+const NewGamesScreen: React.FC<Props> = ({ navigation }) => {    //new
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [games, setGames] = useState<Game[]>([]);
+  
 
   useEffect(() => {
     loadGames();
@@ -24,6 +33,10 @@ const NewGamesScreen: React.FC = () => {
   const handleSearch = (text: string) => {
     setSearchQuery(text);
     loadGames(text);
+  };
+// new
+  const handleGamePress = (game: Game) => {
+    navigation.navigate('GameDetails', { gameId: game.id, gameName: game.name });
   };
 
   return (
@@ -39,11 +52,13 @@ const NewGamesScreen: React.FC = () => {
         data={games}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
-          <View style={styles.gameItem}>
-            <Text style={styles.gameTitle}>{item.name}</Text>
-            <Text>Release Date: {item.released}</Text>
-            <Text>Rating: {item.rating}</Text>
-          </View>
+          <TouchableOpacity onPress={() => handleGamePress(item)}>  
+            <View style={styles.gameItem}>
+              <Text style={styles.gameTitle}>{item.name}</Text>
+              <Text>Release Date: {item.released}</Text>
+              <Text>Rating: {item.rating}</Text>
+            </View>
+          </TouchableOpacity>    //new
         )}
       />
     </View>

@@ -1,85 +1,77 @@
-import React from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+//import React from 'react';
+//import { View, Text, FlatList, StyleSheet } from 'react-native';
 
 // Define a TypeScript type for the review items
-interface Review {
-  id: string;
-  title: string;
-  body: string;
-  reviewer: string;
-  date: string;
-  rating: number;
-}
+// ReviewScreen.tsx
+import { fetchGames, Game } from '../servicesAPIs/api';
 
-// Sample reviews data
-const reviews: Review[] = [
-  { id: '1', title: 'Amazing Game!', body: 'I loved the gameplay and graphics.', reviewer: 'Alice', date: '2024-10-15', rating: 5 },
-  { id: '2', title: 'Not bad', body: 'It was good, but could be better.', reviewer: 'Bob', date: '2024-10-14', rating: 3 },
-  // Add more reviews as needed
-];
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+//import { fetchGames, Game } from '../api/rawgApi';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../App';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+type NewGameScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'NewGames'>;
 
-const ReviewScreen = () => {
-  // Use the Review type for the item parameter
-  const renderReview = ({ item }: { item: Review }) => (
-    <View style={styles.reviewCard}>
-      <Text style={styles.stars}>{'★'.repeat(item.rating) + '☆'.repeat(5 - item.rating)}</Text>
-      <Text style={styles.reviewTitle}>{item.title}</Text>
-      <Text style={styles.reviewBody}>{item.body}</Text>
-      <Text style={styles.reviewerInfo}>{item.reviewer} - {item.date}</Text>
-    </View>
-  );
+type Props = {
+  navigation: NewGameScreenNavigationProp;
+};
+//const NewGamesScreen: React.FC = () => {
+const ReviewScreen: React.FC<Props> = ({ navigation }) => {    //new
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [games, setGames] = useState<Game[]>([]);
+  
+
+  useEffect(() => {
+    loadGames();
+  }, []);
+
+  const loadGames = async (query = '') => {
+    const fetchedGames = await fetchGames(query);
+    setGames(fetchedGames);
+  };
+
+  const handleSearch = (text: string) => {
+    setSearchQuery(text);
+    loadGames(text);
+  };
+// new
+  const handleGamePress = (game: Game) => {
+    navigation.navigate('GameReviews', { gameId: game.id, gameName: game.name });
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Reviews</Text>
+      <Text style={styles.title}>New Games</Text>
+      <TextInput
+        style={styles.searchInput}
+        placeholder="Search games..."
+        value={searchQuery}
+        onChangeText={handleSearch}
+      />
       <FlatList
-        data={reviews}
-        renderItem={renderReview}
-        keyExtractor={(item) => item.id}
+        data={games}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity onPress={() => handleGamePress(item)}>  
+            <View style={styles.gameItem}>
+              <Text style={styles.gameTitle}>{item.name}</Text>
+              <Text>Release Date: {item.released}</Text>
+              <Text>Rating: {item.rating}</Text>
+            </View>
+          </TouchableOpacity>    //new
+        )}
       />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  reviewCard: {
-    padding: 15,
-    marginVertical: 10,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    borderRadius: 8,
-    backgroundColor: '#F5F5F5',
-  },
-  stars: {
-    fontSize: 18,
-    color: '#FFD700',
-    marginBottom: 5,
-  },
-  reviewTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  reviewBody: {
-    fontSize: 14,
-    color: '#666',
-    marginVertical: 5,
-  },
-  reviewerInfo: {
-    fontSize: 12,
-    color: '#999',
-  },
+  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
+  searchInput: { padding: 8, borderColor: '#ccc', borderWidth: 1, borderRadius: 4, marginBottom: 16 },
+  gameItem: { marginBottom: 16, padding: 8, backgroundColor: '#f4f4f8', borderRadius: 8 },
+  gameTitle: { fontSize: 18, fontWeight: '600' },
 });
-
-export default ReviewScreen;
-
+  
+  export default ReviewScreen;
