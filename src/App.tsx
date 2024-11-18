@@ -16,6 +16,7 @@ import ForumScreen from './screens/ForumScreen';
 import NewGamesScreen from './screens/NewGamesScreen';
 import GameDetailsScreen from './screens/GameDetailsScreen';
 import GameReviewsScreen from './screens/GameReviewsScreen';
+import ForumTopicScreen from './screens/ForumTopicScreen';
 
 //const Stack = createNativeStackNavigator();
 export type RootStackParamList = {
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   Reviews: undefined;  //{ gameId: number; gameName: string }
   Login: undefined;
   Forum: undefined;
+  ForumTopic: { topic: string };
   NewGames: undefined
   GameDetails: { gameId: number; gameName: string };
   GameReviews: { gameId: number; gameName: string };
@@ -40,7 +42,8 @@ export default function App() {
         <Stack.Screen name="Reviews" component={ReviewScreen} options={{ title: 'Reviews' }} />
         <Stack.Screen name="GameReviews" component={GameReviewsScreen} options={{ title: 'Reviews' }} />
         <Stack.Screen name="Forum" component={ForumScreen} options={{ title: 'Community Forum' }} />
-        <Stack.Screen name="NewGames" component={NewGamesScreen} options={{ title: 'Best New & Upcoming Releases' }} />
+        <Stack.Screen name="ForumTopic" component={ForumTopicScreen} />
+        <Stack.Screen name="NewGames" component={NewGamesScreen} options={{ title: 'All Games' }} />
         <Stack.Screen name="GameDetails" component={GameDetailsScreen} />
       </Stack.Navigator>
     </NavigationContainer>
