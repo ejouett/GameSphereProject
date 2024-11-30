@@ -1,50 +1,85 @@
 // src/screens/ForumScreen.tsx
-import React, { useState } from 'react';
-import { View, Text, FlatList, TextInput, Button, TouchableOpacity, StyleSheet } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'Forum'>;
+interface Forum {
+  id: string;
+  title: string;
+}
 
-const ForumScreen: React.FC<Props> = ({ navigation }) => {
-  const [topics, setTopics] = useState<{ id: string; title: string }[]>([
-    { id: '1', title: 'Favorite Game of 2024?' },
-    { id: '2', title: 'Best RPG Recommendations' },
-    { id: '3', title: 'Tips for Beginners in Gaming' },
-  ]);
-  const [newTopic, setNewTopic] = useState<string>('');
+const ForumScreen = ({ navigation }: any) => {
+  const [forums, setForums] = useState<Forum[]>([]);
+  const [newForumTitle, setNewForumTitle] = useState<string>('');
 
-  const handleAddTopic = () => {
-    if (newTopic.trim()) {
-      const newId = (topics.length + 1).toString();
-      setTopics((prevTopics) => [...prevTopics, { id: newId, title: newTopic }]);
-      setNewTopic('');
+  useEffect(() => {
+    loadForums();
+  }, []);
+
+  const loadForums = async () => {
+    try {
+      const storedForums = await AsyncStorage.getItem('forums');
+      if (storedForums) {
+        setForums(JSON.parse(storedForums));
+      }
+    } catch (error) {
+      console.error('Error loading forums:', error);
     }
   };
 
-  const handleTopicPress = (topic: string) => {
-    navigation.navigate('ForumTopic', { topic });
+  const saveForums = async (updatedForums: Forum[]) => {
+    try {
+      await AsyncStorage.setItem('forums', JSON.stringify(updatedForums));
+      setForums(updatedForums);
+    } catch (error) {
+      console.error('Error saving forums:', error);
+    }
+  };
+
+  const addForum = () => {
+    if (newForumTitle.trim() === '') return;
+
+    const newForum: Forum = {
+      id: Date.now().toString(),
+      title: newForumTitle,
+    };
+
+    const updatedForums = [...forums, newForum];
+    saveForums(updatedForums);
+    setNewForumTitle('');
+  };
+
+  const handleForumPress = (forum: Forum) => {
+    navigation.navigate('ForumTopic', { forum });
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Forum Topics</Text>
+      <Text style={styles.title}>Forums</Text>
       <FlatList
-        data={topics}
+        data={forums}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <TouchableOpacity style={styles.topicItem} onPress={() => handleTopicPress(item.title)}>
-            <Text style={styles.topicText}>{item.title}</Text>
+          <TouchableOpacity onPress={() => handleForumPress(item)}>
+            <Text style={styles.forumItem}>{item.title}</Text>
           </TouchableOpacity>
         )}
       />
       <TextInput
         style={styles.input}
-        placeholder="Add a new topic..."
-        value={newTopic}
-        onChangeText={setNewTopic}
+        placeholder="Add new forum..."
+        value={newForumTitle}
+        onChangeText={setNewForumTitle}
       />
-      <Button title="Add Topic" onPress={handleAddTopic} />
+      <Button title="Add Forum" onPress={addForum} />
     </View>
   );
 };
@@ -52,22 +87,14 @@ const ForumScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#fff' },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
-  topicItem: {
-    padding: 12,
+  forumItem: {
+    fontSize: 18,
+    padding: 8,
     backgroundColor: '#f4f4f8',
     borderRadius: 8,
     marginBottom: 10,
   },
-  topicText: { fontSize: 18 },
-  input: {
-    padding: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginBottom: 12,
-  },
+  input: { padding: 8, borderWidth: 1, borderColor: '#ccc', borderRadius: 4, marginBottom: 12 },
 });
 
 export default ForumScreen;
-
-

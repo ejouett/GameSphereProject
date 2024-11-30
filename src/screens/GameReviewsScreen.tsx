@@ -21,7 +21,6 @@ const GameReviewsScreen: React.FC<GameReviewsScreenProps> = ({ route }) => {
   }, []);
 
   const loadReviews = async () => {
-    setLoading(true);
     const fetchedReviews = await fetchGameReviews(gameId);
     setReviews(fetchedReviews);
     setLoading(false);

@@ -1,32 +1,71 @@
-import React, { useState } from 'react';
-import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../App';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  FlatList,
+  StyleSheet,
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-type Props = NativeStackScreenProps<RootStackParamList, 'ForumTopic'>;
+interface Comment {
+  id: string;
+  text: string;
+}
 
-const ForumTopicScreen: React.FC<Props> = ({ route }) => {
-  const { topic } = route.params;
-  const [comments, setComments] = useState<string[]>([
-    'This is such a great topic!',
-    'Please follow community standards. Any hate speech, racism, or soliciting will not be tolerated.',
-  ]);
+const ForumTopicScreen = ({ route }: any) => {
+  const { forum } = route.params;
+  const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState<string>('');
 
-  const handleAddComment = () => {
-    if (newComment.trim()) {
-      setComments((prevComments) => [...prevComments, newComment]);
-      setNewComment('');
+  useEffect(() => {
+    loadComments();
+  }, []);
+
+  const loadComments = async () => {
+    try {
+      const storedComments = await AsyncStorage.getItem(`comments_${forum.id}`);
+      if (storedComments) {
+        setComments(JSON.parse(storedComments));
+      }
+    } catch (error) {
+      console.error('Error loading comments:', error);
     }
+  };
+
+  const saveComments = async (updatedComments: Comment[]) => {
+    try {
+      await AsyncStorage.setItem(
+        `comments_${forum.id}`,
+        JSON.stringify(updatedComments)
+      );
+      setComments(updatedComments);
+    } catch (error) {
+      console.error('Error saving comments:', error);
+    }
+  };
+
+  const addComment = () => {
+    if (newComment.trim() === '') return;
+
+    const newCommentObj: Comment = {
+      id: Date.now().toString(),
+      text: newComment,
+    };
+
+    const updatedComments = [...comments, newCommentObj];
+    saveComments(updatedComments);
+    setNewComment('');
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{topic}</Text>
+      <Text style={styles.title}>{forum.title}</Text>
       <FlatList
         data={comments}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={({ item }) => <Text style={styles.comment}>{item}</Text>}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => <Text style={styles.comment}>{item.text}</Text>}
       />
       <TextInput
         style={styles.input}
@@ -34,7 +73,7 @@ const ForumTopicScreen: React.FC<Props> = ({ route }) => {
         value={newComment}
         onChangeText={setNewComment}
       />
-      <Button title="Add Comment" onPress={handleAddComment} />
+      <Button title="Add Comment" onPress={addComment} />
     </View>
   );
 };
@@ -42,14 +81,14 @@ const ForumTopicScreen: React.FC<Props> = ({ route }) => {
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, backgroundColor: '#fff' },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 16 },
-  comment: { padding: 8, marginBottom: 8, backgroundColor: '#f9f9f9', borderRadius: 8 },
-  input: {
+  comment: {
+    fontSize: 16,
     padding: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
-    marginBottom: 12,
+    backgroundColor: '#f4f4f8',
+    borderRadius: 8,
+    marginBottom: 10,
   },
+  input: { padding: 8, borderWidth: 1, borderColor: '#ccc', borderRadius: 4, marginBottom: 12 },
 });
 
 export default ForumTopicScreen;
